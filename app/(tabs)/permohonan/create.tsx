@@ -4,21 +4,23 @@ import {
   Text,
   View,
   TextInput,
-  Button,
-  Platform,
   TouchableOpacity,
+  ActivityIndicator,
 } from "react-native";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { Card, Title, Paragraph } from "react-native-paper";
+import axios from "axios";
+import { router } from "expo-router";
 
 const Create = () => {
   const [date, setDate] = useState<Date>(new Date());
   const [text, setText] = useState<string>("");
+  const [serviceType, setServiceType] = useState<string>("");
   const [showDatePicker, setShowDatePicker] = useState<boolean>(false);
 
   const handleDateChange = (event: any, selectedDate?: Date) => {
     const currentDate = selectedDate || date;
-    setShowDatePicker(false); // Hide picker on iOS after selection
+    setShowDatePicker(false);
     setDate(currentDate);
   };
 
@@ -26,10 +28,29 @@ const Create = () => {
     setText(newText);
   };
 
-  const handleSubmit = () => {
-    // Handle form submission here
-    console.log("Tanggal:", date);
-    console.log("Teks:", text);
+  const handleServiceTypeChange = (newServiceType: string) => {
+    setServiceType(newServiceType);
+  };
+  const [loading, setLoading] = useState(false);
+  const handleSubmit = async () => {
+    console.log("Jenis Pelayanan:", serviceType);
+    const formattedDate = date.toISOString().split("T")[0];
+    console.log(formattedDate);
+    console.log("Keterangan:", text);
+    setLoading(true);
+    try {
+      await axios.post("http://pelayanandesa.test/api/v1/permohonan", {
+        tanggal: formattedDate,
+        jenis_layanan: serviceType,
+        keterangan: text,
+      });
+      alert("Berhasil tambah permohonan");
+      router.push("/permohonan");
+    } catch (error: any) {
+      alert(error.response?.data?.message);
+      console.log("ERROR WOI", error);
+    }
+    setLoading(false);
   };
 
   return (
@@ -39,6 +60,16 @@ const Create = () => {
         <Paragraph style={styles.paragraph}>
           Isi form berikut untuk membuat permohonan baru.
         </Paragraph>
+
+        <View style={styles.formGroup}>
+          <Text style={styles.label}>Jenis Pelayanan</Text>
+          <TextInput
+            style={styles.input}
+            value={serviceType}
+            onChangeText={handleServiceTypeChange}
+            placeholder="Masukkan jenis pelayanan"
+          />
+        </View>
 
         <View style={styles.formGroup}>
           <Text style={styles.label}>Tanggal</Text>
@@ -73,8 +104,15 @@ const Create = () => {
           />
         </View>
 
-        <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
-          <Text style={styles.submitButtonText}>Kirim Permohonan</Text>
+        <TouchableOpacity
+          style={[styles.submitButton, loading && styles.buttonDisabled]}
+          onPress={handleSubmit}
+        >
+          {loading ? (
+            <ActivityIndicator size="small" color="#fff" />
+          ) : (
+            <Text style={styles.submitButtonText}>Kirim Permohonan</Text>
+          )}
         </TouchableOpacity>
       </Card>
     </View>
@@ -88,8 +126,11 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: "#f0f0f0",
   },
+  buttonDisabled: {
+    backgroundColor: "#9bb8a4",
+  },
   card: {
-    width: "100%", // Full width
+    width: "100%",
     padding: 20,
     borderRadius: 12,
     backgroundColor: "#fff",
@@ -115,6 +156,14 @@ const styles = StyleSheet.create({
     color: "#333",
     marginBottom: 8,
   },
+  input: {
+    height: 40,
+    borderColor: "#ccc",
+    borderWidth: 1,
+    padding: 10,
+    borderRadius: 8,
+    backgroundColor: "#f9f9f9",
+  },
   dateButton: {
     padding: 15,
     backgroundColor: "#4CAF50",
@@ -131,7 +180,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     padding: 10,
     borderRadius: 8,
-    textAlignVertical: "top", // Align text at the top
+    textAlignVertical: "top",
     backgroundColor: "#f9f9f9",
   },
   submitButton: {

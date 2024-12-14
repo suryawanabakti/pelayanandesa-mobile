@@ -9,6 +9,8 @@ import {
   ImageBackground,
 } from "react-native";
 import Icon from "react-native-vector-icons/FontAwesome6"; // Make sure to import the correct icon set
+import { useAuth } from "../context/AuthContext";
+import { useEffect } from "react";
 
 export default function HomeScreen() {
   return (

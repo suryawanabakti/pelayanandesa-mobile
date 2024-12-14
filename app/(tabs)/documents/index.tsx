@@ -1,47 +1,74 @@
-import React from "react";
+import axios from "axios";
+import React, { useEffect, useState } from "react";
 import {
   StyleSheet,
   Text,
   View,
   TouchableOpacity,
   ScrollView,
+  Platform,
 } from "react-native";
-
+import RNFS from "react-native-fs";
+import * as FileSystem from "expo-file-system";
+import * as Sharing from "expo-sharing";
 const Index = () => {
+  const [dataDokumen, setDataDokumen] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const getData = async () => {
+    const res = await axios.get("http://pelayanandesa.test/api/v1/dokumen");
+    console.log(res.data.data);
+    setDataDokumen(res.data.data);
+  };
+
   const handleEdit = () => {
     console.log("Edit action");
   };
 
-  const handleDelete = () => {
-    console.log("Delete action");
-  };
+  const handleDownload = async (fileUrl: string) => {
+    const fileUri = `${FileSystem.documentDirectory}sample.pdf`;
+    setLoading(true);
+    try {
+      // Download the PDF from the URL
+      const { uri } = await FileSystem.downloadAsync(fileUrl, fileUri);
+      setLoading(false);
+      alert("Download Success");
 
-  const handleDetail = () => {
-    console.log("Detail action");
+      // Optionally, share or open the file
+      openPdf(uri);
+    } catch (error) {
+      setLoading(false);
+      alert("Download Error");
+      console.error(error);
+    }
   };
-
+  const openPdf = async (uri: string) => {
+    if (Platform.OS === "android" || Platform.OS === "ios") {
+      const canOpen = await Sharing.isAvailableAsync();
+      if (canOpen) {
+        await Sharing.shareAsync(uri);
+      } else {
+        alert("Sharing not available");
+      }
+    }
+  };
+  useEffect(() => {
+    getData();
+  }, []);
   return (
     <ScrollView style={styles.container}>
-      <Text style={styles.title}>Daftar Dokumen</Text>
-
-      {/* Card 2 */}
-      <View style={styles.card}>
-        <Text style={styles.cardTitle}>Permohonan 2</Text>
-        <Text style={styles.cardDescription}>
-          This is a description of Permohonan 2. More details go here.
-        </Text>
-        <View style={styles.actions}>
-          <TouchableOpacity style={styles.button} onPress={handleEdit}>
-            <Text>Edit</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.button} onPress={handleDelete}>
-            <Text>Delete</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.button} onPress={handleDetail}>
-            <Text>Detail</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
+      {dataDokumen.map((dokumen: any) => {
+        return (
+          <View style={styles.card} key={dokumen.id}>
+            <Text style={styles.cardTitle}>{dokumen.nama}</Text>
+            <TouchableOpacity
+              style={styles.button}
+              onPress={() => handleDownload(dokumen.file)}
+            >
+              <Text>Download File</Text>
+            </TouchableOpacity>
+          </View>
+        );
+      })}
     </ScrollView>
   );
 };

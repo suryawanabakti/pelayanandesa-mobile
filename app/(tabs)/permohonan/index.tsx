@@ -1,4 +1,5 @@
-import React from "react";
+import axios from "axios";
+import React, { useEffect, useState } from "react";
 import {
   StyleSheet,
   Text,
@@ -8,40 +9,51 @@ import {
 } from "react-native";
 
 const Index = () => {
+  const [dataPermohonan, setDataPermohonan] = useState([]);
+  const getData = async () => {
+    const res = await axios.get("http://pelayanandesa.test/api/v1/permohonan");
+    console.log(res.data.data);
+    setDataPermohonan(res.data.data);
+  };
   const handleEdit = () => {
     console.log("Edit action");
   };
 
-  const handleDelete = () => {
+  const handleDelete = async (id: number) => {
     console.log("Delete action");
+    await axios.delete("http://pelayanandesa.test/api/v1/permohonan/" + id);
+    getData();
   };
 
   const handleDetail = () => {
     console.log("Detail action");
   };
-
+  useEffect(() => {
+    getData();
+  }, []);
   return (
     <ScrollView style={styles.container}>
-      <Text style={styles.title}>Daftar Permohonan</Text>
-
-      {/* Card 2 */}
-      <View style={styles.card}>
-        <Text style={styles.cardTitle}>Permohonan 2</Text>
-        <Text style={styles.cardDescription}>
-          This is a description of Permohonan 2. More details go here.
-        </Text>
-        <View style={styles.actions}>
-          <TouchableOpacity style={styles.button} onPress={handleEdit}>
-            <Text>Edit</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.button} onPress={handleDelete}>
-            <Text>Delete</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.button} onPress={handleDetail}>
-            <Text>Detail</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
+      {dataPermohonan.map((permohonan: any) => {
+        return (
+          <View style={styles.card} key={permohonan.id}>
+            <Text style={styles.cardTitle}>{permohonan.jenis_layanan}</Text>
+            <Text style={styles.cardDescription}>{permohonan.keterangan}</Text>
+            <Text style={styles.cardDescription}>{permohonan.status}</Text>
+            <View style={styles.actions}>
+              {permohonan.status == "DIAJUKAN" && (
+                <>
+                  <TouchableOpacity
+                    style={styles.button}
+                    onPress={() => handleDelete(permohonan.id)}
+                  >
+                    <Text>Delete</Text>
+                  </TouchableOpacity>
+                </>
+              )}
+            </View>
+          </View>
+        );
+      })}
     </ScrollView>
   );
 };

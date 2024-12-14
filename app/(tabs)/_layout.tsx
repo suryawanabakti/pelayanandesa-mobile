@@ -1,5 +1,5 @@
 import { router, Tabs } from "expo-router";
-import React from "react";
+import React, { useEffect } from "react";
 import { Platform, Text, TouchableOpacity } from "react-native";
 
 import { HapticTab } from "@/components/HapticTab";
@@ -8,6 +8,7 @@ import TabBarBackground from "@/components/ui/TabBarBackground";
 import { Colors } from "@/constants/Colors";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import Icon from "react-native-vector-icons/Ionicons"; // Make sure to import the correct icon set
+import { useAuth } from "../context/AuthContext";
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
@@ -60,7 +61,16 @@ export default function TabLayout() {
         name="change-password"
         options={{
           href: null,
-          title: "change-password",
+          title: "Ubah Password",
+          headerShown: true,
+          headerLeft: () => (
+            <TouchableOpacity
+              onPress={() => router.push("/profile")}
+              style={{ paddingLeft: 16 }}
+            >
+              <Icon name="arrow-back" size={28} color="black" />
+            </TouchableOpacity>
+          ),
           tabBarIcon: ({ color }) => (
             <IconSymbol size={28} name="paperplane.fill" color={color} />
           ),
@@ -71,29 +81,16 @@ export default function TabLayout() {
         name="edit-profile"
         options={{
           href: null,
-
-          title: "Edit Profile",
-          tabBarIcon: ({ color }) => (
-            <IconSymbol size={28} name="paperplane.fill" color={color} />
-          ),
-        }}
-      />
-
-      <Tabs.Screen
-        name="documents"
-        options={{
-          href: null,
-
           headerShown: true,
           headerLeft: () => (
             <TouchableOpacity
-              onPress={() => router.push("/home")}
+              onPress={() => router.push("/profile")}
               style={{ paddingLeft: 16 }}
             >
               <Icon name="arrow-back" size={28} color="black" />
             </TouchableOpacity>
           ),
-          title: "Dokumen",
+          title: "Edit Profile",
           tabBarIcon: ({ color }) => (
             <IconSymbol size={28} name="paperplane.fill" color={color} />
           ),
@@ -114,7 +111,7 @@ export default function TabLayout() {
             </TouchableOpacity>
           ),
 
-          title: "Permohonan",
+          title: "Daftar Permohonan",
           tabBarIcon: ({ color }) => (
             <IconSymbol size={28} name="paperplane.fill" color={color} />
           ),
@@ -135,7 +132,7 @@ export default function TabLayout() {
             </TouchableOpacity>
           ),
 
-          title: "Permohonan",
+          title: "Daftar Dokumen",
           tabBarIcon: ({ color }) => (
             <IconSymbol size={28} name="paperplane.fill" color={color} />
           ),
@@ -155,8 +152,7 @@ export default function TabLayout() {
               <Icon name="arrow-back" size={28} color="black" />
             </TouchableOpacity>
           ),
-
-          title: "Permohonan",
+          title: "Daftar Informasi",
           tabBarIcon: ({ color }) => (
             <IconSymbol size={28} name="paperplane.fill" color={color} />
           ),

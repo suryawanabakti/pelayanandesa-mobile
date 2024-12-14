@@ -2,18 +2,20 @@ import React from "react";
 import { StyleSheet, View, Text, Image, TouchableOpacity } from "react-native";
 import { ThemedText } from "@/components/ThemedText";
 import { router } from "expo-router";
+import { useAuth } from "../context/AuthContext";
 
-const Profile = () => {
-  const user = {
-    name: "John Doe",
-    email: "johndoe@example.com",
-    photo: "https://randomuser.me/api/portraits/men/75.jpg",
-  };
+const Profile: React.FC = () => {
+  const { user }: { user: any } = useAuth(); // Explicitly typing `useAuth`
 
   return (
     <View style={styles.container}>
       {/* Foto Profil */}
-      <Image source={{ uri: user.photo }} style={styles.profileImage} />
+      <Image
+        source={{
+          uri: `https://ui-avatars.com/api/?name=${decodeURI(user.name)}`,
+        }}
+        style={styles.profileImage}
+      />
 
       {/* Nama dan Email */}
       <ThemedText style={styles.name}>{user.name}</ThemedText>

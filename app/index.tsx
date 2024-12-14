@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   StyleSheet,
   Text,
@@ -7,24 +7,42 @@ import {
   View,
   Alert,
   Image,
+  ActivityIndicator,
 } from "react-native";
 import { Link, router } from "expo-router";
-import Icon from "react-native-vector-icons/FontAwesome6";
-
+import { useAuth } from "./context/AuthContext";
+interface Errors {
+  email?: string; // Error for email
+  password?: string; // Error for password
+}
 const LoginScreen: React.FC = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const { login, user } = useAuth();
+  const [errors, setErrors] = useState<Errors>({});
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     if (!email || !password) {
       Alert.alert("Error", "Please enter both email and password.");
       return;
     }
 
-    // Add your authentication logic here
-    Alert.alert("Login", `Email: ${email}\nPassword: ${password}`);
-    router.push("/home");
+    setLoading(true);
+    try {
+      await login(email, password);
+    } catch (error: any) {
+      setErrors(error.response?.data?.errors);
+      alert(error.response?.data?.message);
+    }
+    setLoading(false);
   };
+
+  useEffect(() => {
+    if (user) {
+      router.push("/home");
+    }
+  }, [user]);
 
   return (
     <View style={styles.background}>
@@ -47,7 +65,9 @@ const LoginScreen: React.FC = () => {
             keyboardType="email-address"
             autoCapitalize="none"
           />
-
+          {errors.email && (
+            <Text style={styles.errorText}>{errors.email[0]}</Text>
+          )}
           <TextInput
             style={styles.input}
             placeholder="Password"
@@ -56,9 +76,19 @@ const LoginScreen: React.FC = () => {
             onChangeText={setPassword}
             secureTextEntry
           />
-
-          <TouchableOpacity style={styles.button} onPress={handleLogin}>
-            <Text style={styles.buttonText}>Login</Text>
+          {errors.password && (
+            <Text style={styles.errorText}>{errors.password[0]}</Text>
+          )}
+          <TouchableOpacity
+            style={[styles.button, loading && styles.buttonDisabled]}
+            onPress={handleLogin}
+            disabled={loading}
+          >
+            {loading ? (
+              <ActivityIndicator size="small" color="#fff" />
+            ) : (
+              <Text style={styles.buttonText}>Login</Text>
+            )}
           </TouchableOpacity>
 
           <Link href="/home" style={styles.link}>
@@ -76,6 +106,12 @@ const styles = StyleSheet.create({
     backgroundColor: "#e8f5e9",
     justifyContent: "center",
     alignItems: "center",
+  },
+  errorText: {
+    color: "red",
+    fontSize: 12,
+    alignSelf: "flex-start",
+    marginBottom: 10,
   },
   overlay: {
     flex: 1,
@@ -107,7 +143,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   input: {
-    width: "90%",
+    width: 300,
     height: 50,
     borderWidth: 1,
     borderColor: "#ccc",
@@ -117,13 +153,16 @@ const styles = StyleSheet.create({
     backgroundColor: "#f5f5f5",
   },
   button: {
-    width: "90%",
+    width: 100,
     height: 50,
     backgroundColor: "#2d6a4f",
     justifyContent: "center",
     alignItems: "center",
     borderRadius: 8,
     marginBottom: 15,
+  },
+  buttonDisabled: {
+    backgroundColor: "#9bb8a4",
   },
   buttonText: {
     color: "#fff",

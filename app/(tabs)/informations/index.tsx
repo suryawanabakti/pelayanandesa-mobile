@@ -22,8 +22,6 @@ const Index = () => {
 
   return (
     <ScrollView style={styles.container}>
-      <Text style={styles.title}>Daftar Informasi</Text>
-
       {/* Card 2 */}
       <View style={styles.card}>
         <Text style={styles.cardTitle}>Permohonan 2</Text>
